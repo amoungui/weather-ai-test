@@ -1,0 +1,242 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.header {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.header h1 {
+  color: #333;
+  font-size: 1.8rem;
+}
+.header h1 span {
+  color: #667eea;
+}
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.provider-badge {
+  display: inline-block;
+  background: #4caf50;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+.btn-back {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
+.btn-back:hover {
+  text-decoration: underline;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+}
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.card h3 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #666;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+.btn-primary {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+.btn-primary:hover {
+  background: #5563c1;
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.weather-display {
+  display: none;
+}
+.weather-display.active {
+  display: block;
+}
+.weather-current {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.weather-temp {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #333;
+}
+.weather-desc {
+  color: #666;
+  font-size: 1.1rem;
+}
+.location-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+.weather-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+.weather-detail {
+  background: #f7f7f7;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+.weather-detail .label {
+  font-size: 0.8rem;
+  color: #888;
+}
+.weather-detail .value {
+  font-weight: 600;
+  color: #333;
+}
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+.forecast-day {
+  background: #f7f7f7;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+.forecast-day .date {
+  font-size: 0.7rem;
+  color: #888;
+}
+.forecast-day .temp {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+.forecast-day .desc {
+  font-size: 0.7rem;
+  color: #888;
+}
+.error-msg {
+  background: #fee;
+  color: #c33;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+  display: none;
+}
+.error-msg.active {
+  display: block;
+}
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+.spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.no-result {
+  text-align: center;
+  color: #999;
+  padding: 30px;
+}
+.provider-info {
+  margin-top: 15px;
+  font-size: 0.8rem;
+  color: #888;
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .weather-temp {
+    font-size: 2.5rem;
+  }
+}

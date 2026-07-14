@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WeatherAI Integration</title>
+    <link rel="stylesheet" href="/static/styles/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>🌤️ WeatherAI</h1>
+      <p class="subtitle">
+        Weather API Integration with OpenWeatherMap
+        <span class="badge">FastAPI</span>
+      </p>
+
+      <div class="features">
+        <div class="feature-card">
+          <div class="emoji">🌡️</div>
+          <h3>Real-time Weather</h3>
+          <p>Current conditions and forecasts</p>
+        </div>
+        <div class="feature-card">
+          <div class="emoji">📊</div>
+          <h3>Usage Tracking</h3>
+          <p>Monitor your API usage</p>
+        </div>
+        <div class="feature-card">
+          <div class="emoji">🌍</div>
+          <h3>Global Coverage</h3>
+          <p>Weather data for any location</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        # Example API usage GET /api/weather?lat=-1.2921&lon=36.8219&days=3
+      </div>
+
+      <div class="button-group">
+        <a href="/dashboard" class="btn">📊 Open Dashboard</a>
+        <a href="/docs" class="btn btn-secondary">📚 API Docs</a>
+      </div>
+
+      <div class="footer">
+        <p>Powered by OpenWeatherMap • Made with ❤️ in Python</p>
+      </div>
+    </div>
+  </body>
+</html>

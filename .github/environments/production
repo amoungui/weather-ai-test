@@ -1,0 +1,5 @@
+name: production
+description: Production environment
+env:
+  ENVIRONMENT: production
+  LOG_LEVEL: INFO

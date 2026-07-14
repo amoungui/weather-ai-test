@@ -1,0 +1,5 @@
+name: canary
+description: Canary environment for testing
+env:
+  ENVIRONMENT: canary
+  LOG_LEVEL: DEBUG
