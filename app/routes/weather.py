@@ -35,7 +35,7 @@ async def get_weather_endpoint(
     lat: float = Query(
         ...,
         description="Latitude coordinate (-90 to 90)",
-        example=-1.2921,
+        example=[-1.2921],
         ge=-90,
         le=90,
     ),
@@ -53,7 +53,7 @@ async def get_weather_endpoint(
     units: str = Query(
         "metric",
         description="Units: 'metric' for Celsius, 'imperial' for Fahrenheit",
-        regex="^(metric|imperial)$",
+        pattern="^(metric|imperial)$",
     ),
     lang: str = Query(
         "en", description="Language code for AI summary (e.g., 'en', 'fr', 'es')"
