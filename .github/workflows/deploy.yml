@@ -1,3 +1,4 @@
+﻿---
 name: CI/CD Pipeline
 
 on:
@@ -10,11 +11,8 @@ env:
   PYTHON_VERSION: "3.10"
 
 jobs:
-  # ============================================
-  # JOB 1: Tests
-  # ============================================
   test_job:
-    name: 🧪 Tests
+    name: Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -24,7 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python ${{ matrix.python-version }}
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -59,11 +57,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
-  # ============================================
-  # JOB 2: Code Quality & SAST
-  # ============================================
   code_quality_job:
-    name: 🔍 Code Quality & SAST
+    name: Code Quality
     runs-on: ubuntu-latest
     needs: test_job
 
@@ -85,7 +80,8 @@ jobs:
 
       - name: Lint with flake8
         run: |
-          flake8 app/ --count --max-complexity=10 --max-line-length=100 --statistics --exit-zero
+          flake8 app/ --count --max-complexity=10 --max-line-length=100 \
+            --statistics --exit-zero
 
       - name: Security scan with bandit
         run: |
@@ -97,41 +93,48 @@ jobs:
           name: bandit-report
           path: bandit-report.json
 
-  # ============================================
-  # JOB 3: Security Analysis (SAST)
-  # ============================================
   sast_job:
-  name: 🛡️ Security Analysis (SAST)
-  runs-on: ubuntu-latest
-  needs: test_job
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    needs: test_job
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
 
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: "fs"
-        scan-ref: "."
-        format: "sarif"
-        output: "trivy-results.sarif"
-        exit-code: "0"
-        ignore-unfixed: true
-        severity: "CRITICAL,HIGH"
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+          exit-code: "0"
+          ignore-unfixed: true
+          severity: "CRITICAL,HIGH"
 
-    - name: Upload Trivy results to GitHub Security
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: "trivy-results.sarif"
-      permissions:
-        security-events: write
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-extended,security-and-quality
 
-  # ============================================
-  # JOB 4: Package & Build
-  # ============================================
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: "trivy-results.sarif"
+
   package_job:
-    name: 📦 Package & Build
+    name: Package and Build
     runs-on: ubuntu-latest
     needs: [code_quality_job, sast_job]
     if: github.ref == 'refs/heads/main'
@@ -157,11 +160,8 @@ jobs:
           name: build-artifacts
           path: dist/
 
-  # ============================================
-  # JOB 5: Canary Deployment
-  # ============================================
   canary_job:
-    name: 🧪 Canary Deployment
+    name: Canary Deployment
     runs-on: ubuntu-latest
     needs: package_job
     if: github.ref == 'refs/heads/main'
@@ -179,15 +179,11 @@ jobs:
 
       - name: Deploy to Canary
         run: |
-          echo "🚀 Deploying to canary environment..."
-          echo "✅ Canary deployment successful"
-          echo "🔗 URL: https://canary.weather-app.com"
+          echo "Deploying to canary environment..."
+          echo "Canary deployment successful"
 
-  # ============================================
-  # JOB 6: Production Deployment
-  # ============================================
   deploy_prod_job:
-    name: 🚀 Production Deployment
+    name: Production Deployment
     runs-on: ubuntu-latest
     needs: canary_job
     if: github.ref == 'refs/heads/main'
@@ -199,9 +195,8 @@ jobs:
 
       - name: Deploy to Production
         run: |
-          echo "🚀 Deploying to production environment..."
-          echo "✅ Production deployment successful"
-          echo "🔗 URL: https://api.weather-app.com"
+          echo "Deploying to production environment..."
+          echo "Production deployment successful"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -209,7 +204,7 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: Release v${{ github.run_number }}
           body: |
-            ## 🚀 Production Release
+            ## Production Release
 
             ### Changes
             - Commit: ${{ github.sha }}
@@ -218,3 +213,5 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
