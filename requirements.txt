@@ -1,8 +1,22 @@
+# Framework web
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
+
+# Client HTTP
 httpx==0.25.2
+
+# Validation de données
 pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Variables d'environnement
 python-dotenv==1.0.0
+
+# Templates HTML
 jinja2==3.1.2
+
+# Fichiers statiques
 aiofiles==23.2.1
+
+# Pour les formulaires multipart
 python-multipart==0.0.6
