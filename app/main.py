@@ -6,22 +6,27 @@ all routes, middleware, and services.
 """
 
 from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
+from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import os
+from fastapi.staticfiles import StaticFiles
 import time
 import logging
 from datetime import datetime
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 # Import configuration
 from app.config import settings, APP_ENV, APP_DEBUG, APP_NAME, APP_VERSION, LOG_LEVEL
 
 # Import authentication service
 from app.services.auth_service import auth_service, get_auth_status
+
+# Import weather routes
 from app.routes import weather as weather_routes
 
 # Configure logging
@@ -34,6 +39,10 @@ logger = logging.getLogger(__name__)
 # Global variable for uptime tracking
 start_time = time.time()
 
+# Setup templates
+templates_dir = Path(__file__).parent / "templates"
+templates = Jinja2Templates(directory=str(templates_dir))
+
 # ============================================
 # Lifespan Manager
 # ============================================
@@ -43,9 +52,6 @@ start_time = time.time()
 async def lifespan(app: FastAPI):
     """
     Manage application lifecycle events
-
-    This function handles startup and shutdown events,
-    logging important information and performing initialization.
     """
     # Startup
     logger.info(f"Starting {APP_NAME} v{APP_VERSION}")
@@ -56,7 +62,7 @@ async def lifespan(app: FastAPI):
     auth_status = get_auth_status()
     logger.info("Authentication Status:")
     for api_type, status in auth_status["apis"].items():
-        status_emoji = "True" if status["configured"] else "False"
+        status_emoji = "true" if status["configured"] else "false"
         logger.info(f"   {status_emoji} {api_type}: {status['message']}")
 
     if (
@@ -71,7 +77,7 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown
-    logger.info(f"Shutting down {APP_NAME}")
+    logger.info(f" Shutting down {APP_NAME}")
 
 
 # ============================================
@@ -81,26 +87,24 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=APP_NAME,
     description="""
-    ## WeatherAI Integration
+    ## 🌤️ WeatherAI Integration
     
-    Application integrating the WeatherAI API for weather data with AI summaries.
+    Application integrating weather APIs for weather data.
     
     ### Features:
     - Real-time weather and forecasts
-    - AI-generated summaries (Gemini)
     - Account usage tracking
     - Multi-API support (WeatherAI + OpenWeatherMap fallback)
     
-    ### Authentication:
-    API keys are managed through the AuthService. Configure your keys in .env
-    
     ### Available Endpoints:
-    - `GET /` - Application information
-    - `GET /health` - Health check and status
+    - `GET /` - Home page
+    - `GET /dashboard` - Weather dashboard
+    - `GET /health` - Health check
     - `GET /api/weather` - Weather data
+    - `GET /api/weather/current` - Current weather only
+    - `GET /api/weather/forecast` - Forecast only
     - `GET /api/usage` - Account usage
     - `GET /auth/status` - Authentication status
-    - `GET /config` - Configuration (development only)
     """,
     version=APP_VERSION,
     docs_url="/docs" if APP_DEBUG else None,
@@ -108,8 +112,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Include weather routes
-app.include_router(weather_routes.router)
+# ============================================
+# Static Files
+# ============================================
+
+# Serve static files from the 'static' directory at project root
+static_dir = "static"
+if not os.path.exists(static_dir):
+    os.makedirs(static_dir)
+    print(f"📁 Created static directory: {static_dir}")
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+print(f"✅ Static files served from: /{static_dir}")
 
 # ============================================
 # Middleware
@@ -121,9 +135,6 @@ app.include_router(weather_routes.router)
 async def add_process_time_header(request: Request, call_next):
     """
     Add X-Process-Time header to all responses
-
-    This middleware measures the time taken to process each request
-    and adds it as a response header for monitoring.
     """
     start_time = time.time()
     response = await call_next(request)
@@ -145,8 +156,6 @@ async def add_process_time_header(request: Request, call_next):
 async def error_handling_middleware(request: Request, call_next):
     """
     Global error handling middleware
-
-    Catches all unhandled exceptions and returns formatted JSON responses.
     """
     try:
         response = await call_next(request)
@@ -226,37 +235,36 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 
 # ============================================
-# Routes
+# Include Routers
+# ============================================
+
+# Include weather routes
+app.include_router(weather_routes.router)
+
+# ============================================
+# HTML Routes (Dashboard)
 # ============================================
 
 
-@app.get("/")
-async def root():
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
     """
-    Root endpoint - Main entry point
+    Home page
     """
-    auth_status = get_auth_status()
+    return templates.TemplateResponse("index.html", {"request": request})
 
-    return {
-        "message": f"Welcome to {APP_NAME}",
-        "version": APP_VERSION,
-        "environment": APP_ENV,
-        "endpoints": {
-            "docs": "/docs" if APP_DEBUG else "Not available",
-            "health": "/health",
-            "weather": "/api/weather?lat=-1.2921&lon=36.8219",
-            "usage": "/api/usage",
-            "auth_status": "/auth/status",
-            "config": "/config" if APP_DEBUG else "Not available",
-        },
-        "authentication": {
-            "weather_ai_configured": auth_status["apis"]["weather_ai"]["configured"],
-            "openweather_configured": auth_status["apis"]["openweather"]["configured"],
-            "has_valid_key": auth_status["apis"]["weather_ai"]["valid"]
-            or auth_status["apis"]["openweather"]["valid"],
-        },
-        "timestamp": datetime.now().isoformat(),
-    }
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    """
+    Weather Dashboard
+    """
+    return templates.TemplateResponse("dashboard.html", {"request": request})
+
+
+# ============================================
+# API Routes
+# ============================================
 
 
 @app.get("/health")
@@ -288,17 +296,12 @@ async def authentication_status():
 @app.get("/config")
 async def get_config():
     """
-    Display application configuration
-
-    This endpoint is only available in development mode.
-    In production, it returns a 403 Forbidden error.
+    Display application configuration (development only)
     """
     if APP_ENV == "production":
         raise HTTPException(
             status_code=403, detail="Configuration not available in production"
         )
-
-    from app.config import settings
 
     return {
         "app": {
@@ -328,8 +331,6 @@ async def get_config():
 async def test_authentication():
     """
     Test endpoint to verify authentication is working
-
-    Returns the current authentication status and a test header.
     """
     try:
         from app.services.auth_service import get_auth_headers

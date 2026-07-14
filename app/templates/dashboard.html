@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="/static/styles/dashboard.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🌤️ Weather <span>Dashboard</span></h1>
+        <div class="header-actions">
+          <span class="provider-badge" id="providerBadge">OpenWeatherMap</span>
+          <a href="/" class="btn-back">← Home</a>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Search Card -->
+        <div class="card">
+          <h3>🔍 Search Weather</h3>
+          <form id="weatherForm">
+            <div class="form-group">
+              <label for="lat">Latitude</label>
+              <input
+                type="number"
+                id="lat"
+                value="-1.2921"
+                step="0.0001"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="lon">Longitude</label>
+              <input
+                type="number"
+                id="lon"
+                value="36.8219"
+                step="0.0001"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="days">Forecast Days</label>
+              <select id="days">
+                <option value="1">1 day</option>
+                <option value="3" selected>3 days</option>
+                <option value="5">5 days</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="units">Units</label>
+              <select id="units">
+                <option value="metric">Metric (°C)</option>
+                <option value="imperial">Imperial (°F)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary" id="searchBtn">
+              🌡️ Get Weather
+            </button>
+          </form>
+          <div id="errorMsg" class="error-msg"></div>
+        </div>
+
+        <!-- Results Card -->
+        <div class="card">
+          <h3>🌡️ Weather Results</h3>
+          <div id="loading" class="loading" style="display: none">
+            <div class="spinner"></div>
+            <p>Loading weather data...</p>
+          </div>
+          <div id="noResult" class="no-result">
+            <p>🔍 Enter coordinates and click "Get Weather"</p>
+          </div>
+          <div id="weatherResult" class="weather-display">
+            <div class="weather-current">
+              <div>
+                <div class="weather-temp" id="temp">--°C</div>
+                <div class="weather-desc" id="description">--</div>
+              </div>
+              <div style="text-align: right">
+                <div class="location-name" id="location">--</div>
+                <div style="font-size: 0.8rem; color: #aaa" id="time">--</div>
+              </div>
+            </div>
+            <div class="weather-details">
+              <div class="weather-detail">
+                <div class="label">💧 Humidity</div>
+                <div class="value" id="humidity">--%</div>
+              </div>
+              <div class="weather-detail">
+                <div class="label">💨 Wind</div>
+                <div class="value" id="wind">-- km/h</div>
+              </div>
+              <div class="weather-detail">
+                <div class="label">☁️ Clouds</div>
+                <div class="value" id="clouds">--%</div>
+              </div>
+              <div class="weather-detail">
+                <div class="label">📊 Pressure</div>
+                <div class="value" id="pressure">-- hPa</div>
+              </div>
+            </div>
+            <h4 style="margin-top: 20px; color: #333">📅 Forecast</h4>
+            <div id="forecast" class="forecast-grid"></div>
+            <div class="provider-info">
+              <span>Provider: </span
+              ><span id="providerInfo">OpenWeatherMap</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Get weather data
+      async function fetchWeather(lat, lon, days, units) {
+        const url = `/api/weather?lat=${lat}&lon=${lon}&days=${days}&units=${units}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || "Failed to fetch weather data");
+        }
+        return await response.json();
+      }
+
+      // Display weather data
+      function displayWeather(data) {
+        const resultDiv = document.getElementById("weatherResult");
+        const noResultDiv = document.getElementById("noResult");
+        const loadingDiv = document.getElementById("loading");
+
+        loadingDiv.style.display = "none";
+        noResultDiv.style.display = "none";
+        resultDiv.className = "weather-display active";
+
+        // Current weather
+        const current = data.current;
+        const tempUnit = current.units === "metric" ? "°C" : "°F";
+        const speedUnit = current.units === "metric" ? "km/h" : "mph";
+
+        document.getElementById("temp").textContent =
+          `${current.temp}${tempUnit}`;
+        document.getElementById("description").textContent =
+          current.description || "--";
+        document.getElementById("location").textContent =
+          data.location.display_name || "--";
+        document.getElementById("time").textContent = new Date(
+          data.timestamp,
+        ).toLocaleString();
+
+        document.getElementById("humidity").textContent =
+          `${current.humidity || "--"}%`;
+        document.getElementById("wind").textContent =
+          `${current.wind_speed || "--"} ${speedUnit}`;
+        document.getElementById("clouds").textContent =
+          `${current.cloud_cover || "--"}%`;
+        document.getElementById("pressure").textContent =
+          `${current.pressure || "--"} hPa`;
+
+        // Provider
+        const provider = data.provider || "OpenWeatherMap";
+        document.getElementById("providerInfo").textContent = provider;
+        document.getElementById("providerBadge").textContent = provider;
+
+        // Forecast
+        const forecastDiv = document.getElementById("forecast");
+        forecastDiv.innerHTML = "";
+
+        if (data.forecast && data.forecast.length > 0) {
+          data.forecast.forEach((day) => {
+            const dayDiv = document.createElement("div");
+            dayDiv.className = "forecast-day";
+            dayDiv.innerHTML = `
+                        <div class="date">${day.day_name || day.date}</div>
+                        <div style="font-size:1.5rem;margin:5px 0;">${day.icon || "🌡️"}</div>
+                        <div class="temp">${day.temp_max}° / ${day.temp_min}°</div>
+                        <div class="desc">${day.description || ""}</div>
+                    `;
+            forecastDiv.appendChild(dayDiv);
+          });
+        }
+      }
+
+      // Handle form submission
+      document
+        .getElementById("weatherForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const lat = document.getElementById("lat").value;
+          const lon = document.getElementById("lon").value;
+          const days = document.getElementById("days").value;
+          const units = document.getElementById("units").value;
+
+          const loadingDiv = document.getElementById("loading");
+          const errorMsg = document.getElementById("errorMsg");
+          const resultDiv = document.getElementById("weatherResult");
+          const noResultDiv = document.getElementById("noResult");
+
+          // Reset
+          errorMsg.className = "error-msg";
+          errorMsg.textContent = "";
+          resultDiv.className = "weather-display";
+          noResultDiv.style.display = "block";
+          loadingDiv.style.display = "block";
+
+          try {
+            const data = await fetchWeather(lat, lon, days, units);
+            displayWeather(data);
+          } catch (error) {
+            errorMsg.className = "error-msg active";
+            errorMsg.textContent = `❌ ${error.message}`;
+            noResultDiv.style.display = "block";
+          } finally {
+            loadingDiv.style.display = "none";
+          }
+        });
+
+      // Auto-load weather on page load
+      document.getElementById("searchBtn").click();
+    </script>
+  </body>
+</html>
