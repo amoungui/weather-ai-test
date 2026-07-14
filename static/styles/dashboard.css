@@ -240,3 +240,21 @@ body {
     font-size: 2.5rem;
   }
 }
+.ai-summary {
+    background: #f8f9ff;
+    border-left: 4px solid #667eea;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.ai-summary p {
+    color: #444;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.ai-summary .label-ai {
+    font-weight: 600;
+    color: #667eea;
+}
