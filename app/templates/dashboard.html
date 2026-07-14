@@ -499,16 +499,18 @@
       // ============================================================
 
       async function fetchWeather(lat, lon, days, units, ai) {
-        const url = `/api/weather?lat=${lat}&lon=${lon}&days=${days}&units=${units}&ai=${ai}`;
-        console.log("📡 Fetching weather:", url);
-        const response = await fetch(url);
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.detail || "Failed to fetch weather data");
-        }
-        const data = await response.json();
-        console.log("📊 Weather data received:", data);
-        return data;
+          // Utilisation d'une URL relative - elle s'adaptera automatiquement
+          const url = `/api/weather?lat=${lat}&lon=${lon}&days=${days}&units=${units}&ai=${ai}`;
+          console.log('📡 Fetching weather:', url);
+          
+          const response = await fetch(url);
+          if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.detail || 'Failed to fetch weather data');
+          }
+          const data = await response.json();
+          console.log('📊 Weather data received:', data);
+          return data;
       }
 
       // ============================================================
