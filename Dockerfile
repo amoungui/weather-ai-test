@@ -1,28 +1,39 @@
+# Image de base Python
 FROM python:3.10-slim
 
+# Variables d'environnement
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Installer les dépendances système
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
+# Copier les dépendances Python
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Installer les dépendances Python
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy application
-COPY app/ ./app/
-COPY static/ ./static/
+# Copier le code de l'application
+COPY . .
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Créer un utilisateur non-root pour la sécurité
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+# Passer à l'utilisateur non-root
 USER appuser
 
-# Expose port
+# Exposer le port
 EXPOSE 8000
 
-# Start application
+# Démarrer l'application avec Gunicorn pour la production
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

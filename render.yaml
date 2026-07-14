@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: weather-ai-integration
+    runtime: python
+    plan: free
+    autoDeploy: true
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: WEATHER_AI_API_KEY
+        sync: false
+      - key: WEATHER_AI_URL
+        value: https://api.weather-ai.co/v1
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: PYTHON_VERSION
+        value: 3.10.0

@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  weather-app:
+    build: .
+    container_name: weather-ai-app
+    ports:
+      - "8000:8000"
+    environment:
+      - WEATHER_AI_API_KEY=${WEATHER_AI_API_KEY}
+      - WEATHER_AI_URL=${WEATHER_AI_URL}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
+    volumes:
+      - ./app:/app/app
+      - ./static:/app/static
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
