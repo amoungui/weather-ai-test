@@ -4,9 +4,8 @@ __pycache__/
 *$py.class
 *.so
 .Python
-.env
-venv/
 env/
+venv/
 ENV/
 .venv
 
@@ -15,7 +14,14 @@ dist/
 build/
 *.egg-info/
 
-# IDEs
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.coverage.xml
+*.cover
+
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -27,3 +33,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
