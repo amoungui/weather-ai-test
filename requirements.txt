@@ -5,18 +5,25 @@ uvicorn[standard]==0.24.0
 # Client HTTP
 httpx==0.25.2
 
-# Validation de données
+# Validation of data
 pydantic==2.5.0
 pydantic-settings==2.1.0
 
-# Variables d'environnement
+# environment Variables
 python-dotenv==1.0.0
 
 # Templates HTML
 jinja2==3.1.2
 
-# Fichiers statiques
+# Statics files
 aiofiles==23.2.1
 
 # Pour les formulaires multipart
 python-multipart==0.0.6
+
+# ============================================
+# Dependancies of development (tests)
+# ============================================
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
