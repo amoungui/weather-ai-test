@@ -216,6 +216,10 @@ jobs:
     needs: canary_job
     if: github.ref == 'refs/heads/main'
     environment: production
+    permissions:
+      contents: write
+      actions: read
+      checks: read
 
     steps:
       - name: Checkout code
@@ -223,8 +227,9 @@ jobs:
 
       - name: Deploy to Production
         run: |
-          echo "Deploying to production environment..."
-          echo "Production deployment successful"
+          echo "🚀 Deploying to production environment..."
+          echo "✅ Production deployment successful"
+          echo "🔗 URL: https://weather-ai-test.onrender.com"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -232,14 +237,18 @@ jobs:
           tag_name: v${{ github.run_number }}
           name: Release v${{ github.run_number }}
           body: |
-            ## Production Release
+            ## 🚀 Production Release v${{ github.run_number }}
 
-            ### Changes
+            ### 📦 What's new
             - Commit: ${{ github.sha }}
-            - Version: ${{ github.run_number }}
+            - Deployed to: https://weather-ai-test.onrender.com
+
+            ### ✅ Checks passed
+            - Tests: ✅
+            - Code Quality: ✅
+            - Security Scan: ✅
+            - Canary Deployment: ✅
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
