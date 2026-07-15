@@ -133,6 +133,9 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
+  # ============================================
+  # JOB 4: Package & Build
+  # ============================================
   package_job:
     name: Package and Build
     runs-on: ubuntu-latest
@@ -148,18 +151,43 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Build package
+      - name: Verify application files
         run: |
-          python -m pip install --upgrade pip
-          pip install build
-          python -m build
+          echo "📁 Application files:"
+          ls -la app/
+          echo ""
+          echo "📄 Requirements.txt:"
+          cat requirements.txt
+
+      - name: Create deployment package
+        run: |
+          # Créer un répertoire de déploiement
+          mkdir -p deploy/app
+          mkdir -p deploy/static
+          mkdir -p deploy/templates
+
+          # Copier les fichiers nécessaires
+          cp -r app/* deploy/app/
+          cp -r static/* deploy/static/ 2>/dev/null || true
+          cp -r app/templates/* deploy/templates/ 2>/dev/null || true
+          cp requirements.txt deploy/
+          cp Dockerfile deploy/ 2>/dev/null || true
+
+          # Créer une archive
+          cd deploy
+          tar -czf ../weather-app.tar.gz .
+          cd ..
+
+          echo "✅ Package created: weather-app.tar.gz"
+          ls -lh weather-app.tar.gz
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: dist/
-
+          path: |
+            weather-app.tar.gz
+            deploy/
   canary_job:
     name: Canary Deployment
     runs-on: ubuntu-latest
